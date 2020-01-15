@@ -3,7 +3,7 @@
 The main goal here is leaning. And that's it. But at the end, SUNO reports will be sent automaticaly to my Kindle. 
 
 ## How to use
-For now, we are able to scrape our SUNO account and list available reports to download. A simple devices API with create/update and list operations are already in place too.
+For now, we are able to scrape our SUNO account and list available reports to download. A simple devices API with create/update and list operations is already in place too.
 
 First of all, setup environment variables and start the application:
 
