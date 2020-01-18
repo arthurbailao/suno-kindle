@@ -15,16 +15,19 @@ import (
 
 const sunoURL = "https://membros.sunoresearch.com.br/"
 
+// Client ...
 type Client struct {
 	httpClient http.Client
 }
 
+// Credentials ...
 type Credentials struct {
 	Username, Password string
 }
 
+// Report ...
 type Report struct {
-	ID, Title, URL, Description string
+	ID, Title, URL, Description, Filename string
 }
 
 type authenticatedRoundTripper struct {
@@ -32,6 +35,7 @@ type authenticatedRoundTripper struct {
 	cookie    *http.Cookie
 }
 
+// New ...
 func New(credentials Credentials) (*Client, error) {
 	if credentials.Username == "" || credentials.Password == "" {
 		return nil, errors.New("failed with empty credentials")
@@ -72,6 +76,7 @@ func New(credentials Credentials) (*Client, error) {
 	}}, nil
 }
 
+// Scrape ...
 func (c Client) Scrape() ([]Report, error) {
 	res, err := c.httpClient.Get(sunoURL)
 	if err != nil {
@@ -113,11 +118,13 @@ func (c Client) Scrape() ([]Report, error) {
 			URL:         URL,
 			Title:       title,
 			Description: description,
+			Filename:    title + ".pdf",
 		})
 	})
 	return reports, nil
 }
 
+// Download ...
 func (c Client) Download(r Report) error {
 	// Get the data
 	resp, err := c.httpClient.Get(r.URL)
@@ -127,7 +134,7 @@ func (c Client) Download(r Report) error {
 	defer resp.Body.Close()
 
 	// Create the file
-	out, err := os.Create(r.Title + ".pdf")
+	out, err := os.Create(r.Filename)
 	if err != nil {
 		return err
 	}
@@ -137,6 +144,17 @@ func (c Client) Download(r Report) error {
 	_, err = io.Copy(out, resp.Body)
 	return err
 
+}
+
+// Open ...
+func (r Report) Open() (*os.File, error) {
+	file, err := os.Open(r.Filename)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open report file")
+	}
+
+	return file, nil
 }
 
 func (art authenticatedRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
